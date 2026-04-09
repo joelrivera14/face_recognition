@@ -20,40 +20,43 @@ detector = cv2.FaceDetectorYN.create(YUNET_PATH, "", (width, height))
 age_net = cv2.dnn.readNet(AGE_MODEL, AGE_PROTO)
 gender_net = cv2.dnn.readNet(GENDER_MODEL, GENDER_PROTO)
 
+frame_count = 0
+last_labels = {}
+
 while True:
     success, frame = cap.read()
     if not success:
         break
 
+    frame_count += 1
     _, faces = detector.detect(frame)
 
     if faces is not None:
-        for face in faces:
+        for i, face in enumerate(faces):
             x, y, w, h = face[:4].astype(int)
-
-            # Clamp to frame boundaries
             x = max(0, x)
             y = max(0, y)
             w = min(w, width - x)
             h = min(h, height - y)
 
-            face_crop = frame[y:y+h, x:x+w]
-            if face_crop.size == 0:
-                continue
+            if frame_count % 5 == 0:
+                face_crop = frame[y:y+h, x:x+w]
+                if face_crop.size == 0:
+                    continue
 
-            blob = cv2.dnn.blobFromImage(face_crop, 1.0, (227, 227),
-                                         (78.4263377603, 87.7689143744, 114.895847746),
-                                         swapRB=False)
+                blob = cv2.dnn.blobFromImage(face_crop, 1.0, (227, 227),
+                                             (78.4263377603, 87.7689143744, 114.895847746),
+                                             swapRB=False)
 
-            gender_net.setInput(blob)
-            gender_preds = gender_net.forward()
-            gender = GENDER_LIST[gender_preds[0].argmax()]
+                gender_net.setInput(blob)
+                gender = GENDER_LIST[gender_net.forward()[0].argmax()]
 
-            age_net.setInput(blob)
-            age_preds = age_net.forward()
-            age = AGE_BUCKETS[age_preds[0].argmax()]
+                age_net.setInput(blob)
+                age = AGE_BUCKETS[age_net.forward()[0].argmax()]
 
-            label = f"{gender}, {age}"
+                last_labels[i] = f"{gender}, {age}"
+
+            label = last_labels.get(i, "")
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             cv2.putText(frame, label, (x, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
