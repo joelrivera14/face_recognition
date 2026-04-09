@@ -58,18 +58,19 @@ while True:
 
                 gray = cv2.cvtColor(face_crop, cv2.COLOR_BGR2GRAY)
                 resized = cv2.resize(gray, (64, 64))
-                normalized = resized.astype('float32')
-                emotion_blob = normalized.reshape(1, 1, 64, 64)
+                emotion_blob = resized.astype('float32').reshape(1, 1, 64, 64)
                 emotion_net.setInput(emotion_blob)
-                emotion_preds = emotion_net.forward()
-                emotion = EMOTIONS[emotion_preds[0].argmax()]
+                emotion = EMOTIONS[emotion_net.forward()[0].argmax()]
 
-                last_labels[i] = f"{gender}, {age}, {emotion}"
+                last_labels[i] = (gender, age, emotion)
 
-            label = last_labels.get(i, "")
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(frame, label, (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+            if i in last_labels:
+                gender, age, emotion = last_labels[i]
+                for j, text in enumerate([gender, age, emotion]):
+                    cv2.putText(frame, text, (x, y - 10 - (j * 20)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     cv2.imshow("Face Detection", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
