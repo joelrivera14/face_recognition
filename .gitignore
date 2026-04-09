@@ -1,0 +1,8 @@
+venv/
+*.caffemodel
+*.onnx
+*.bin
+*.xml
+*.prototxt
+__pycache__/
+*.pyc
