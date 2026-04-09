@@ -1,6 +1,6 @@
 # Face Recognition App
 
-Live webcam app that detects faces and overlays age, gender, and emotion labels in real time. Built with OpenCV and Python 3.12 — no wrapper libraries.
+Live webcam app that detects faces and overlays age, gender, and emotion labels in real time. Built with OpenCV and Python 3.12
 
 ## Models Required
 
