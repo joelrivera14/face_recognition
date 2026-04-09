@@ -22,7 +22,6 @@ while True:
         for face in faces:
             x, y, w, h = face[:4].astype(int)
 
-            # Clamp to frame boundaries
             x = max(0, x)
             y = max(0, y)
             w = min(w, width - x)
